@@ -8,56 +8,49 @@ export default class RestaurantsDAO {
         try {
             restaurants = await conn.db(process.env.RESTREVIEWS_NS).collection("restaurants");
         } catch (e) {
-            console.error (`Unable to establish a collection handle in restaurantsDAO: ${e}`,)
-        }
-    }
-}
-
-const getRestaurants = async ({
-    filters = null,
-    page = 0,
-    restaurantsPerPage = 20,
-}) => {
-    let query;
-
-    if (filter) {
-        if ("name" in filters) {
-            query = { $text: { $search: filters["name"] }}
-        } else if ("cuisine" in filters) {
-            query = { "cuisine": { $eq: filters["cuisine"] }}
-        } else if ("zipcode" in filters) {
-            query = { "address.zipcode": { $eq: filters["zipcode"] }}
+            console.error(`Unable to establish a collection handle in restaurantsDAO: ${e}`,)
         }
     }
 
-    let cursor;
+    static async getRestaurants({
+        filters = null,
+        page = 0,
+        restaurantsPerPage = 20,
+    } = {}) {
+        let query;
 
-    try {
-        cursor = await restaurants
-            .find(query);
-    } catch (e) {
-        console.error(`Unable to issue find command, ${ e }`);
-        return { restaurantsList: [], totalNumRestaurants: 0 }
-    }
+        if (filters) {
+            if ("name" in filters) {
+                query = { $text: { $search: filters["name"] } }
+            } else if ("cuisine" in filters) {
+                query = { "cuisine": { $eq: filters["cuisine"] } }
+            } else if ("zipcode" in filters) {
+                query = { "address.zipcode": { $eq: filters["zipcode"] } }
+            }
+        }
 
-    const displayCursor = cursor.limit(restaurantsPerPage).skip(restaurantsPerPage * page);
+        let cursor;
 
-    try {
-        const restaurantsList = await displayCursor.toArray();
-        const totalNumRestaurants = await restaurants.countDocuments(query);
+        try {
+            cursor = await restaurants
+                .find(query);
+        } catch (e) {
+            console.error(`Unable to issue find command, ${e}`);
+            return { restaurantsList: [], totalNumRestaurants: 0 }
+        }
 
-        return { restaurantsList, totalNumRestaurants };
-    } catch (e) {
-        console.error(
-            `Unable to convert cursor to array or problem counting documents, ${ e }`
-        );
-        return { restaurantsList: [], totalNumRestaurants: 0 };
+        const displayCursor = cursor.limit(restaurantsPerPage).skip(restaurantsPerPage * page);
+
+        try {
+            const restaurantsList = await displayCursor.toArray();
+            const totalNumRestaurants = await restaurants.countDocuments(query);
+
+            return { restaurantsList, totalNumRestaurants };
+        } catch (e) {
+            console.error(
+                `Unable to convert cursor to array or problem counting documents, ${e}`
+            );
+            return { restaurantsList: [], totalNumRestaurants: 0 };
+        }
     }
 }
-// static async getRestaurants ({
-//     filters = null,
-//     page = 0,
-//     restaurantsPerPage = 20,
-// } = {}) {
- 
-// }
