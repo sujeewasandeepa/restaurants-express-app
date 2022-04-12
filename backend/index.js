@@ -1,7 +1,7 @@
 import app from "./server.js"
 import mongodb from "mongodb"
 import dotenv from "dotenv"
-import RestaurantsDAO from "./api/dao/restaurantDAO"
+import RestaurantsDAO from "./dao/restaurantDAO"
 
 dotenv.config();
 const MongoClient = mongodb.MongoClient;
