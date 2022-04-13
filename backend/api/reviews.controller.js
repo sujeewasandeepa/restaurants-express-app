@@ -23,5 +23,34 @@ export default class ReviewsController {
         }
     }
 
-    
+    static async apiUpdateReview(req, res, next) {
+        try {
+            const reviewId = req.body.review_id;
+            const text = req.body.text;
+            const date = new Date();
+
+            const reviewResponse = await ReviewDAO.updateReview (
+                reviewId,
+                req.body.user_id,
+                text,
+                date,
+            )
+
+            let { error } = reviewResponse;
+
+            if (error) {
+                res.status(400).json({ error });
+            }
+
+            if (reviewResponse.modifiedCount === 0) {
+                throw new Error (
+                    "Unable to update review - user might not have the permission.",
+                )
+            }
+
+            res.json({ status: "success" });
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    }
 }
